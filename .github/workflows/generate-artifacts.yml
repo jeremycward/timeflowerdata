@@ -26,12 +26,12 @@ jobs:
         run: |
           python python/generate_pydantic_models.py \
             --schema timelineschema.json \
-            --output "${RUNNER_TEMP}/timeflowerdata-artifacts/timeline_models.py"
+            --output generated/timeline_models.py
 
       - name: Upload generated artifact snapshot
         uses: actions/upload-artifact@v4
         with:
           name: pydantic-models-${{ github.sha }}
-          path: ${{ runner.temp }}/timeflowerdata-artifacts/timeline_models.py
+          path: generated/timeline_models.py
           if-no-files-found: error
           retention-days: 14
