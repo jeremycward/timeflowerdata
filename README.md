@@ -7,7 +7,7 @@ Language-agnostic schema repository for timeflower timeline data.
 - `timelineschema.json` — source JSON Schema
 - `python/generate_pydantic_models.py` — build script that generates Python (Pydantic) artifacts from the schema
 - `python/src/timeflowerdata_schema/` — Python package source for distributable schema models
-- `.github/workflows/release_schema.yml` — manual GitHub Action that builds a Python package artifact
+- `.github/workflows/release_schema.yml` — manual GitHub Action that builds and publishes versioned package artifacts to GitHub Releases
 
 Generated artifacts are intentionally not stored in this repository.
 
@@ -64,9 +64,31 @@ Workflow name: `release_schema`
 
 - Trigger mode: manual only (`workflow_dispatch`)
 - Not automatically triggered by push or PR
-- Output: `dist/*` uploaded as a workflow artifact named `release_schema_dist_<run_number>`
+- Required input: `version` (example: `0.1.0`)
+- Output 1: `dist/*` uploaded as a workflow artifact named `release_schema_dist_<version>`
+- Output 2: GitHub Release with tag `v<version>` and uploaded `*.whl` and `*.tar.gz` assets
 
-Use this when you want an ad-hoc package build without publishing publicly.
+Use this when you want an ad-hoc package build and private release distribution.
+
+## Consume from private GitHub Release URL
+
+In a consumer project `requirements.txt`, pin to a specific wheel version from a release asset:
+
+```text
+timeflowerdata-schema @ https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/OWNER/REPO/releases/download/v0.1.0/timeflowerdata_schema-0.1.0-py3-none-any.whl
+```
+
+Then install:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+Notes:
+
+- Keep `v0.1.0` and `0.1.0` aligned to the same released version.
+- Use environment variables for `GITHUB_USER` and `GITHUB_TOKEN` (do not hardcode tokens).
+- To upgrade, publish a new release (for example `v0.1.1`), update the requirements entry, and reinstall.
 
 ## Later: private remote distribution options
 
@@ -85,4 +107,4 @@ Current workflow uploads generated artifacts as workflow artifacts on each push/
 Other options you can use later include:
 
 - Publish versioned artifacts as GitHub release assets
-- Publish Python package artifacts to GitHub Packages or PyPI
+- Publish Python package artifacts to a private PyPI-compatible index or PyPI

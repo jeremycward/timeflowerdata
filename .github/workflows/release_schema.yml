@@ -2,12 +2,17 @@ name: release_schema
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Package version (example: 0.1.0)"
+        required: true
+        type: string
 
 jobs:
   release_schema:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
 
     steps:
       - name: Checkout
@@ -23,6 +28,24 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install build datamodel-code-generator
 
+      - name: Validate version input
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid version: $VERSION"
+            echo "Expected semver-like format, for example: 1.2.3 or 1.2.3-rc.1"
+            exit 1
+          fi
+
+      - name: Set release version
+        run: |
+          VERSION="${{ inputs.version }}"
+          TAG="v${VERSION}"
+          sed -i "s/^version = \".*\"/version = \"${VERSION}\"/" pyproject.toml
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+          echo "TAG=${TAG}" >> "$GITHUB_ENV"
+          grep '^version = ' pyproject.toml
+
       - name: Generate packaged Pydantic models
         run: |
           python python/generate_pydantic_models.py \
@@ -35,7 +58,19 @@ jobs:
       - name: Upload package artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: release_schema_dist_${{ github.run_number }}
+          name: release_schema_dist_${{ env.VERSION }}
           path: dist/*
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish GitHub Release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: release_schema ${{ env.TAG }}
+          body: |
+            Generated Python schema package for version ${{ env.VERSION }}.
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+          fail_on_unmatched_files: true
