@@ -2,8 +2,8 @@
 
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/schemas/ninetynine_data.schema.json",
-  "title": "NinetyNine Timeline Data",
+  "$id": "https://example.com/schemas/flower_data.schema.json",
+  "title": "Flower Timeline Data",
   "type": "object",
   "required": ["start", "end", "tracks"],
   "additionalProperties": false,
