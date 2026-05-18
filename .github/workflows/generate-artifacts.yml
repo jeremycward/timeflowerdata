@@ -1,0 +1,35 @@
+name: Generate schema artifacts
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  generate-python-artifact:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install generator dependency
+        run: python -m pip install --upgrade pip datamodel-code-generator
+
+      - name: Generate Pydantic models
+        run: |
+          python python/generate_pydantic_models.py \
+            --schema timelineschema.json \
+            --output "${RUNNER_TEMP}/timeflowerdata-artifacts/timeline_models.py"
+
+      - name: Upload generated artifact snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: pydantic-models-${{ github.sha }}
+          path: ${{ runner.temp }}/timeflowerdata-artifacts/timeline_models.py
+          if-no-files-found: error
+          retention-days: 14
