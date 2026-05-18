@@ -1,0 +1,41 @@
+name: release_schema
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release_schema:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build datamodel-code-generator
+
+      - name: Generate packaged Pydantic models
+        run: |
+          python python/generate_pydantic_models.py \
+            --schema timelineschema.json \
+            --output python/src/timeflowerdata_schema/timeline_models.py
+
+      - name: Build wheel and sdist
+        run: python -m build
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release_schema_dist_${{ github.run_number }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30

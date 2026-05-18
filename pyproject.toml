@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "timeflowerdata-schema"
+version = "0.1.0"
+description = "Generated Pydantic models for the timeflower timeline JSON schema"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "LicenseRef-Proprietary"
+authors = [
+  { name = "timeflowerdata maintainers" }
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only"
+]
+dependencies = [
+  "pydantic>=2,<3"
+]
+
+[tool.setuptools]
+package-dir = {"" = "python/src"}
+
+[tool.setuptools.packages.find]
+where = ["python/src"]
+include = ["timeflowerdata_schema*"]
